@@ -153,6 +153,36 @@ textarea {
   object-position: center;
 }
 
+.hero-overlay-bottom {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 45%;
+  background: linear-gradient(
+    to top,
+    rgba(16, 24, 32, 0.8),
+    rgba(16, 24, 32, 0.4),
+    transparent
+  );
+  z-index: 10;
+  pointer-events: none;
+}
+
+.hero-heading {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  color: var(--color-cloud-white);
+  text-align: center;
+  max-width: min(90%, 720px);
+  z-index: 20;
+}
+
+.hero-heading h1 {
+  margin: 0;
+}
+
 .heading-text-subheading {
   margin: 0;
   color: var(--color-grey);
