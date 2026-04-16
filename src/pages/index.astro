@@ -7,7 +7,7 @@ const heroMedia = {
   // Set a value like "/hero-video.mp4" to enable hero video.
   videoSrc: "",
   // Set a Cloudflare Stream video ID to use the embedded player.
-  cloudflareVideoId: "9de23cd6caa7a5f4911f3ae0150904d2",
+  cloudflareVideoId: "",
 };
 const cloudflareHlsSrc = heroMedia.cloudflareVideoId
   ? `https://videodelivery.net/${heroMedia.cloudflareVideoId}/manifest/video.m3u8`
@@ -146,6 +146,10 @@ const submitButtonClasses =
             </svg>
           </button>
         </div>
+        <p
+          class="hidden text-center font-(--font-sans) text-[12px] leading-[16px]"
+          data-submit-status
+          aria-live="polite"></p>
       </form>
     </section>
   </main>
@@ -273,6 +277,9 @@ const submitButtonClasses =
 
     if (form instanceof HTMLFormElement) {
       const controls = form.querySelectorAll("input, textarea, select");
+      const submitButton = form.querySelector('button[type="submit"]');
+      const submitStatus = form.querySelector("[data-submit-status]");
+      const endpoint = "/api/contact";
       let hasAttemptedSubmit = false;
 
       const setFieldErrorState = (field: Element) => {
@@ -345,6 +352,71 @@ const submitButtonClasses =
           }
           return;
         }
+
+        const values = {
+          ...Object.fromEntries(
+            Object.entries(payload).map(([key, value]) => {
+              if (typeof value === "boolean") {
+                return [key, String(value)];
+              }
+
+              return [key, value];
+            }),
+          ),
+          domainAddress: window.location.hostname,
+        };
+
+        if (submitButton instanceof HTMLButtonElement) {
+          submitButton.disabled = true;
+        }
+
+        if (submitStatus instanceof HTMLElement) {
+          submitStatus.textContent = "Submitting...";
+          submitStatus.classList.remove("hidden", "text-[var(--destructive)]");
+          submitStatus.classList.add("text-[var(--color-grey)]");
+        }
+
+        void fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ values }),
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              throw new Error(`Form submission failed with status ${response.status}`);
+            }
+
+            console.log("Holding page form submitted", values);
+
+            if (submitStatus instanceof HTMLElement) {
+              submitStatus.textContent = "Thank you. Your message has been submitted.";
+              submitStatus.classList.remove("text-[var(--destructive)]", "text-[var(--color-grey)]");
+              submitStatus.classList.add("text-[var(--color-night)]");
+            }
+
+            form.reset();
+            hasAttemptedSubmit = false;
+            controls.forEach((field: Element) => {
+              setFieldErrorState(field);
+            });
+          })
+          .catch((error) => {
+            console.error("Holding page form submission failed", error);
+
+            if (submitStatus instanceof HTMLElement) {
+              submitStatus.textContent =
+                "Something went wrong while submitting the form. Please try again.";
+              submitStatus.classList.remove("hidden", "text-[var(--color-grey)]");
+              submitStatus.classList.add("text-[var(--destructive)]");
+            }
+          })
+          .finally(() => {
+            if (submitButton instanceof HTMLButtonElement) {
+              submitButton.disabled = false;
+            }
+          });
       });
     }
   </script>

@@ -1,1 +1,7 @@
 node_modules
+
+# Astro build output
+dist/
+
+# Astro generated types and settings
+.astro/
