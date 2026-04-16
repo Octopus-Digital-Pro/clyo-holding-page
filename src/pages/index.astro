@@ -137,7 +137,11 @@ const submitButtonClasses =
               </a>
             </span>
           </label>
-          <p class="mt-[-6px] hidden font-(--font-sans) text-[12px] leading-[16px] text-(--destructive) not-empty:block" data-error-for="privacyConsent" aria-live="polite"></p>
+          <p
+            class="mt-[-6px] hidden font-[var(--font-sans)] text-[12px] leading-[16px] text-[var(--destructive)] not-empty:block"
+            data-error-for="privacyConsent"
+            aria-live="polite"
+          ></p>
           <label class={checkboxRowClasses} data-checkbox-row data-invalid="false">
             <input class={checkboxClasses} type="checkbox" name="marketingOptIn" />
             <span>Yes, I would like to receive emails with exclusive specials and offers.</span>
@@ -159,9 +163,10 @@ const submitButtonClasses =
           </button>
         </div>
         <p
-          class="hidden text-center font-(--font-sans) text-[12px] leading-[16px]"
+          class="hidden text-center font-[var(--font-sans)] text-[12px] leading-[16px]"
           data-submit-status
-          aria-live="polite"></p>
+          aria-live="polite"
+        ></p>
       </form>
     </section>
   </main>
@@ -291,7 +296,7 @@ const submitButtonClasses =
       const controls = form.querySelectorAll("input, textarea, select");
       const submitButton = form.querySelector('button[type="submit"]');
       const submitStatus = form.querySelector("[data-submit-status]");
-      const endpoint = "/api/contact";
+      const endpoint = "https://beta.clyo.com/umbraco/forms/delivery/api/v1/entries/49ee912c-4928-4b5d-bd5a-3a7768579a17";
       let hasAttemptedSubmit = false;
 
       const setFieldErrorState = (field: Element) => {
@@ -366,15 +371,7 @@ const submitButtonClasses =
         }
 
         const values = {
-          ...Object.fromEntries(
-            Object.entries(payload).map(([key, value]) => {
-              if (typeof value === "boolean") {
-                return [key, String(value)];
-              }
-
-              return [key, value];
-            }),
-          ),
+          ...payload,
           domainAddress: window.location.hostname,
         };
 
@@ -393,7 +390,7 @@ const submitButtonClasses =
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ values }),
+          body: JSON.stringify(values),
         })
           .then(async (response) => {
             if (!response.ok) {
