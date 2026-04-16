@@ -290,13 +290,66 @@ const submitButtonClasses =
 
     void initCloudflareHeroVideo();
 
+    const RECAPTCHA_SITE_KEY = "6LcviLsrAAAAACjxjvbZp5mhmku9_-DVmPXCDaPd";
+
+    const loadRecaptchaScript = () => {
+      if (typeof window === "undefined") return Promise.reject(new Error("reCAPTCHA can only run in the browser."));
+
+      if ((window as typeof window & { grecaptcha?: unknown }).grecaptcha) {
+        return Promise.resolve();
+      }
+
+      return new Promise<void>((resolve, reject) => {
+        const existingScript = document.querySelector<HTMLScriptElement>('script[src^="https://www.google.com/recaptcha/api.js"]');
+        if (existingScript) {
+          existingScript.addEventListener("load", () => resolve(), { once: true });
+          existingScript.addEventListener("error", () => reject(new Error("Failed to load reCAPTCHA script.")), {
+            once: true,
+          });
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(RECAPTCHA_SITE_KEY)}`;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Failed to load reCAPTCHA script."));
+        document.head.append(script);
+      });
+    };
+
+    const getRecaptchaToken = async () => {
+      if (!RECAPTCHA_SITE_KEY) {
+        throw new Error("Missing reCAPTCHA site key.");
+      }
+
+      await loadRecaptchaScript();
+
+      const grecaptcha = (window as typeof window & { grecaptcha?: { ready: (cb: () => void) => void; execute: (siteKey: string, options: { action: string }) => Promise<string> } }).grecaptcha;
+
+      if (!grecaptcha) {
+        throw new Error("reCAPTCHA is not available on this page.");
+      }
+
+      return new Promise<string>((resolve, reject) => {
+        grecaptcha.ready(() => {
+          grecaptcha
+            .execute(RECAPTCHA_SITE_KEY, { action: "contact_form" })
+            .then((token: string) => resolve(token))
+            .catch((error: unknown) => reject(error));
+        });
+      });
+    };
+
     const form = document.querySelector("#contact-form");
 
     if (form instanceof HTMLFormElement) {
       const controls = form.querySelectorAll("input, textarea, select");
       const submitButton = form.querySelector('button[type="submit"]');
       const submitStatus = form.querySelector("[data-submit-status]");
-      const endpoint = "https://beta.clyo.com/umbraco/forms/delivery/api/v1/entries/49ee912c-4928-4b5d-bd5a-3a7768579a17";
+      const endpoint =
+        "https://api.clyo.com/umbraco/forms/delivery/api/v1/entries/49ee912c-4928-4b5d-bd5a-3a7768579a17";
       let hasAttemptedSubmit = false;
 
       const setFieldErrorState = (field: Element) => {
@@ -344,7 +397,7 @@ const submitButtonClasses =
         field.addEventListener("change", () => setFieldErrorState(field));
       });
 
-      form.addEventListener("submit", (event) => {
+      form.addEventListener("submit", async (event) => {
         event.preventDefault();
         hasAttemptedSubmit = true;
 
@@ -385,47 +438,58 @@ const submitButtonClasses =
           submitStatus.classList.add("text-[var(--color-grey)]");
         }
 
-        void fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(values),
-        })
-          .then(async (response) => {
-            if (!response.ok) {
-              throw new Error(`Form submission failed with status ${response.status}`);
-            }
+        try {
+          const recaptcha = await getRecaptchaToken();
 
-            console.log("Holding page form submitted", values);
+          const body = {
+            values: {
+              ...values,
+              recaptcha,
+            },
+          };
 
-            if (submitStatus instanceof HTMLElement) {
-              submitStatus.textContent = "Thank you. Your message has been submitted.";
-              submitStatus.classList.remove("text-[var(--destructive)]", "text-[var(--color-grey)]");
-              submitStatus.classList.add("text-[var(--color-night)]");
-            }
-
-            form.reset();
-            hasAttemptedSubmit = false;
-            controls.forEach((field: Element) => {
-              setFieldErrorState(field);
-            });
-          })
-          .catch((error) => {
-            console.error("Holding page form submission failed", error);
-
-            if (submitStatus instanceof HTMLElement) {
-              submitStatus.textContent =
-                "Something went wrong while submitting the form. Please try again.";
-              submitStatus.classList.remove("hidden", "text-[var(--color-grey)]");
-              submitStatus.classList.add("text-[var(--destructive)]");
-            }
-          })
-          .finally(() => {
-            if (submitButton instanceof HTMLButtonElement) {
-              submitButton.disabled = false;
-            }
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Methods": "POST, OPTIONS",
+              "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            },
+            body: JSON.stringify(body),
           });
+
+          if (!response.ok) {
+            throw new Error(`Form submission failed with status ${response.status}`);
+          }
+
+          console.log("Holding page form submitted", body);
+
+          if (submitStatus instanceof HTMLElement) {
+            submitStatus.textContent = "Thank you. Your message has been submitted.";
+            submitStatus.classList.remove("text-[var(--destructive)]", "text-[var(--color-grey)]");
+            submitStatus.classList.add("text-[var(--color-night)]");
+          }
+
+          form.reset();
+          hasAttemptedSubmit = false;
+          controls.forEach((field: Element) => {
+            setFieldErrorState(field);
+          });
+        } catch (error) {
+          console.error("Holding page form submission failed", error);
+
+          if (submitStatus instanceof HTMLElement) {
+            submitStatus.textContent =
+              "Something went wrong while submitting the form. Please try again.";
+            submitStatus.classList.remove("hidden", "text-[var(--color-grey)]");
+            submitStatus.classList.add("text-[var(--destructive)]");
+          }
+        } finally {
+          if (submitButton instanceof HTMLButtonElement) {
+            submitButton.disabled = false;
+          }
+        }
       });
     }
   </script>
