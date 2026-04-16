@@ -153,27 +153,6 @@ textarea {
   object-position: center;
 }
 
-.hero-media-embed,
-.hero-poster {
-  position: absolute;
-  inset: 0;
-}
-
-.hero-media-embed {
-  z-index: 1;
-  border: 0;
-}
-
-.hero-poster {
-  z-index: 2;
-  transition: opacity 0.3s ease;
-}
-
-.hero-frame.is-loaded .hero-poster {
-  opacity: 0;
-  pointer-events: none;
-}
-
 .heading-text-subheading {
   margin: 0;
   color: var(--color-grey);

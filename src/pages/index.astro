@@ -9,7 +9,9 @@ const heroMedia = {
   // Set a Cloudflare Stream video ID to use the embedded player.
   cloudflareVideoId: "9de23cd6caa7a5f4911f3ae0150904d2",
 };
-const heroPosterUrl = new URL(heroMedia.imageSrc, Astro.url).toString();
+const cloudflareHlsSrc = heroMedia.cloudflareVideoId
+  ? `https://videodelivery.net/${heroMedia.cloudflareVideoId}/manifest/video.m3u8`
+  : "";
 
 const inputClasses =
   "h-[42px] w-full rounded-[6px] border border-[var(--color-ivory)] bg-transparent px-[14px] py-[10px] font-[var(--font-serif)] text-[14px] leading-[18px] text-[var(--color-night)] outline-none placeholder:text-[rgba(16,24,32,0.6)] focus:border-[var(--color-sky-blue)] aria-[invalid=true]:border-[var(--destructive)] aria-[invalid=true]:focus:shadow-[0_0_0_3px_oklch(0.577_0.245_27.325_/_0.2)]";
@@ -42,23 +44,21 @@ const submitButtonClasses =
       <div class="hero-frame">
         {
           heroMedia.cloudflareVideoId ? (
-            <>
-              <img
-                class="hero-poster"
-                src={heroMedia.imageSrc}
-                alt={heroMedia.imageAlt}
-                loading="eager"
-              />
-              <iframe
-                class="hero-media hero-media-embed"
-                data-hero-embed
-                src={`https://iframe.videodelivery.net/${heroMedia.cloudflareVideoId}?autoplay=true&muted=true&loop=true&controls=false&poster=${encodeURIComponent(heroPosterUrl)}`}
-                title={heroMedia.imageAlt}
-                loading="eager"
-                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
-                allowfullscreen
-              ></iframe>
-            </>
+            <video
+              class="hero-media"
+              data-cloudflare-video
+              data-cloudflare-src={cloudflareHlsSrc}
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              poster={heroMedia.imageSrc}
+              crossorigin="anonymous"
+              aria-label={heroMedia.imageAlt}
+            >
+              <source src={cloudflareHlsSrc} type="application/x-mpegURL" />
+            </video>
           ) : heroMedia.videoSrc ? (
             <video
               class="hero-media"
@@ -88,9 +88,7 @@ const submitButtonClasses =
         <div class="font-serif text-[16px] leading-6 xl:text-[18px] xl:leading-[27px] [&_a]:underline [&_p]:m-0">
           <p>
             By subscribing, you agree to receive updates from Islas Secas and occasionally
-            from sister destinations that share our ownership and conservation ethos. Read
-            Privacy &amp; Cookies Policy
-            <a href="/01%20-%20Introduction.pdf" target="_blank" rel="noopener noreferrer">here</a>.
+            from sister destinations that share our ownership and conservation ethos. 
           </p>
         </div>
       </div>
@@ -181,6 +179,83 @@ const submitButtonClasses =
   </footer>
 
   <script>
+    const hlsScriptUrl = "https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js";
+
+    const loadHlsScript = () => {
+      const existingHls = (window as Window & { Hls?: unknown }).Hls;
+      if (existingHls) {
+        return Promise.resolve();
+      }
+
+      return new Promise<void>((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = hlsScriptUrl;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Failed to load HLS runtime."));
+        document.head.append(script);
+      });
+    };
+
+    const initCloudflareHeroVideo = async () => {
+      const cloudflareVideo = document.querySelector("[data-cloudflare-video]");
+      if (!(cloudflareVideo instanceof HTMLVideoElement)) {
+        return;
+      }
+
+      const hlsSrc = cloudflareVideo.dataset.cloudflareSrc;
+      if (!hlsSrc) {
+        return;
+      }
+
+      const tryPlay = () => {
+        const playAttempt = cloudflareVideo.play();
+        if (playAttempt instanceof Promise) {
+          playAttempt.catch((error) => {
+            console.warn("Cloudflare hero video autoplay was blocked.", error);
+          });
+        }
+      };
+
+      const canPlayNativeHls =
+        cloudflareVideo.canPlayType("application/vnd.apple.mpegurl") !== "";
+
+      if (canPlayNativeHls) {
+        cloudflareVideo.src = hlsSrc;
+        cloudflareVideo.addEventListener("loadedmetadata", tryPlay, { once: true });
+        cloudflareVideo.load();
+        return;
+      }
+
+      try {
+        await loadHlsScript();
+
+        const HlsCtor = (
+          window as Window & {
+            Hls?: {
+              isSupported: () => boolean;
+              new (): {
+                loadSource: (src: string) => void;
+                attachMedia: (media: HTMLMediaElement) => void;
+              };
+            };
+          }
+        ).Hls;
+
+        if (HlsCtor && HlsCtor.isSupported()) {
+          const hls = new HlsCtor();
+          cloudflareVideo.addEventListener("canplay", tryPlay, { once: true });
+          hls.loadSource(hlsSrc);
+          hls.attachMedia(cloudflareVideo);
+          return;
+        }
+
+        console.warn("Cloudflare hero video could not initialize HLS playback.");
+      } catch (error) {
+        console.warn("Cloudflare hero video failed to initialize.", error);
+      }
+    };
+
     const header = document.querySelector(".site-header");
 
     if (header instanceof HTMLElement) {
@@ -192,20 +267,7 @@ const submitButtonClasses =
       window.addEventListener("scroll", handleHeaderScroll, { passive: true });
     }
 
-    const heroEmbeds = document.querySelectorAll("[data-hero-embed]");
-
-    heroEmbeds.forEach((embed) => {
-      if (!(embed instanceof HTMLIFrameElement)) {
-        return;
-      }
-
-      embed.addEventListener("load", () => {
-        const heroFrame = embed.closest(".hero-frame");
-        if (heroFrame instanceof HTMLElement) {
-          heroFrame.classList.add("is-loaded");
-        }
-      });
-    });
+    void initCloudflareHeroVideo();
 
     const form = document.querySelector("#contact-form");
 
