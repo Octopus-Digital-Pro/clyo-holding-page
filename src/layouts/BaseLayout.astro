@@ -4,12 +4,33 @@ import "../styles/global.css";
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
+  ogImageAlt?: string;
+  ogType?: "website" | "article";
+  noindex?: boolean;
 }
 
 const {
   title = "CLYO Holding Page",
   description = "A lightweight coming soon holding page for CLYO.",
+  ogImage = "/hero-image.webp",
+  ogImageAlt = "A serene resort pool lined with palm trees at sunset.",
+  ogType = "website",
+  noindex = false,
 } = Astro.props;
+
+const siteName = "CLYO Hotels & Resorts";
+const locale = "en_US";
+const ogImageWidth = "1503";
+const ogImageHeight = "1002";
+const ogImageType = "image/webp";
+
+const canonicalUrl = new URL(
+  Astro.url.pathname,
+  Astro.site ?? Astro.url,
+).toString();
+const ogImageUrl = new URL(ogImage, Astro.site ?? Astro.url).toString();
+const robotsContent = noindex ? "noindex, nofollow" : "index, follow";
 ---
 
 <!doctype html>
@@ -18,7 +39,28 @@ const {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <meta name="robots" content={robotsContent} />
     <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={locale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta property="og:image:type" content={ogImageType} />
+    <meta property="og:image:width" content={ogImageWidth} />
+    <meta property="og:image:height" content={ogImageHeight} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <title>{title}</title>

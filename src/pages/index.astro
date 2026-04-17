@@ -25,15 +25,12 @@ const submitButtonClasses =
   "inline-flex min-w-[142px] items-center justify-center gap-6 rounded-[10px] border border-[var(--color-ivory)] bg-transparent px-7 py-[14px] font-[var(--font-sans)] text-[12px] font-medium uppercase tracking-[1px] leading-[16px] text-[var(--color-night)] transition hover:bg-[rgba(224,208,184,0.25)] xl:px-[50px] xl:text-[14px] xl:leading-[18px]";
 ---
 
-<BaseLayout
-  title="CLYO Hotels & Resorts"
-  description="CLYO Hotels & Resorts."
->
-
-
+<BaseLayout title="CLYO Hotels & Resorts" description="CLYO Hotels & Resorts.">
   <main>
     <section class="h-screen w-full" aria-label="Hero image">
-      <div class="relative h-screen w-full overflow-hidden bg-(--color-cloud-white)">
+      <div
+        class="relative h-screen w-full overflow-hidden bg-(--color-cloud-white)"
+      >
         {
           heroMedia.cloudflareVideoId ? (
             <video
@@ -73,31 +70,76 @@ const submitButtonClasses =
             />
           )
         }
+        <div
+          class="absolute inset-0 z-10 bg-[linear-gradient(to_bottom,rgba(16,24,32,0.44)_0%,rgba(16,24,32,0.55)_25%,rgba(16,24,32,0.55)_75%,rgba(16,24,32,0.44)_100%)]"
+          aria-hidden="true"
+        >
+        </div>
 
         <div
-          class="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(to_bottom,rgba(16,24,32,0.44)_0%,rgba(16,24,32,0.55)_25%,rgba(16,24,32,0.55)_75%,rgba(16,24,32,0.44)_100%)]"
-          aria-hidden="true"
-        ></div>
+          class="absolute inset-0 z-20 h-full w-full px-4 py-6 text-(--color-cloud-white) md:py-8 xl:py-10"
+        >
+          <div class="relative z-10 flex items-center justify-center invert">
+            <img
+              src="/logo.svg"
+              alt="CLYO Hotels and Resorts"
+              class="w-24 h-auto"
+            />
+          </div>
 
-        <div class="absolute inset-0 z-20 flex h-full w-full flex-col items-center justify-center px-4 text-center text-(--color-cloud-white)">
-          <h1
-            class="text-[46px] md:text-[74px] xl:text-[82px] font-serif leading-none font-light tracking-tight mb-16"
-            style="animation-delay:0s"
+          <div
+            class="absolute inset-0 flex items-center justify-center px-4 text-center"
           >
-            CLYO Hotels and Resorts Coming Soon
-          </h1>
-          <div class="w-full max-w-[min(90%,720px)]">
-          <form class="grid w-full max-w-[648px] gap-6" id="contact-form" novalidate>
+            <div
+              class="flex md:max-w-[85vw] mb-16 flex-col items-center justify-center"
+            >
+              <h1
+                class="text-[46px] md:text-[74px] xl:text-[82px] font-serif leading-none font-light tracking-tight mb-8"
+                style="animation-delay:0s"
+              >
+                CLYO Hotels and Resorts Coming Soon
+              </h1>
+              <p
+                class="text-[16px] md:text-[18px] xl:text-[20px] font-serif leading-[1.2] font-light tracking-tight max-w-[min(60%,680px)]"
+              >
+                We're coming soon - when the sun rises, we stir. When it’s time
+                to move, we dance. When curiosity calls, we discover. In nature.
+                In luxury. In every memory.
+              </p>
+            </div>
+          </div>
+
+          <form
+            class="absolute left-1/2 top-[calc(50%+clamp(5.5rem,10vh,8.5rem))] z-10 grid w-[calc(100%-2rem)] max-w-[648px] -translate-x-1/2 gap-6"
+            id="contact-form"
+            novalidate
+          >
             <div class="grid grid-cols-2 gap-4">
               <label class="block">
-                <span class="absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]">
+                <span
+                  class="absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
+                >
                   Full Name
                 </span>
-                <input id="name" class={inputClasses} type="text" name="name" placeholder="Full name*" required />
-                <p class={errorClasses} data-error-for="name" aria-live="polite"></p>
+                <input
+                  id="name"
+                  class={inputClasses}
+                  type="text"
+                  name="name"
+                  placeholder="Full name*"
+                  required
+                />
+                <p
+                  class={errorClasses}
+                  data-error-for="name"
+                  aria-live="polite"
+                >
+                </p>
               </label>
               <label class="block">
-                <span class="absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]">
+                <span
+                  class="absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
+                >
                   Email Address
                 </span>
                 <input
@@ -108,19 +150,40 @@ const submitButtonClasses =
                   placeholder="Email address*"
                   required
                 />
-                <p class={errorClasses} data-error-for="emailAddress" aria-live="polite"></p>
+                <p
+                  class={errorClasses}
+                  data-error-for="emailAddress"
+                  aria-live="polite"
+                >
+                </p>
               </label>
             </div>
-    
+
             <fieldset class="grid gap-[14px] border-0 p-0 m-0">
-              <legend class="absolute  -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]">
+              <legend
+                class="absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
+              >
                 Consent
               </legend>
-              <label class={checkboxRowClasses} data-checkbox-row data-invalid="false">
-                <input id="privacyConsent" class={checkboxClasses} type="checkbox" name="privacyConsent" required />
+              <label
+                class={checkboxRowClasses}
+                data-checkbox-row
+                data-invalid="false"
+              >
+                <input
+                  id="privacyConsent"
+                  class={checkboxClasses}
+                  type="checkbox"
+                  name="privacyConsent"
+                  required
+                />
                 <span>
                   I agree to receive emails from Clyo. See
-                  <a href="/01%20-%20Introduction.pdf" target="_blank" rel="noopener noreferrer">
+                  <a
+                    href="/01%20-%20Introduction.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Privacy Policy
                   </a>
                   .
@@ -130,15 +193,25 @@ const submitButtonClasses =
                 class="mt-[-6px] hidden font-(--font-sans) text-[12px] leading-[16px] text-(--destructive) not-empty:block"
                 data-error-for="privacyConsent"
                 aria-live="polite"
-              ></p>
-
+              >
+              </p>
             </fieldset>
-    
+
             <div class="flex justify-center">
               <button class={submitButtonClasses} type="submit">
                 <span>Submit</span>
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
-                  <path d="M5 12H19" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M5 12H19"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                    stroke-linecap="round"></path>
                   <path
                     d="M12 5L19 12L12 19"
                     stroke="currentColor"
@@ -149,298 +222,334 @@ const submitButtonClasses =
               </button>
             </div>
             <p
-              class="hidden text-center font-(--font-sans) text-[12px] leading-[16px]"          data-submit-status
+              class="hidden text-center font-(--font-sans) text-[12px] leading-[16px]"
+              data-submit-status
               aria-live="polite"
-            ></p>
+            >
+            </p>
           </form>
-        </div>
         </div>
       </div>
     </section>
-
-
   </main>
+</BaseLayout>
 
+<script>
+  const hlsScriptUrl =
+    "https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js";
 
+  const loadHlsScript = () => {
+    const existingHls = (window as Window & { Hls?: unknown }).Hls;
+    if (existingHls) {
+      return Promise.resolve();
+    }
 
-  <script>
-    const hlsScriptUrl = "https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js";
+    return new Promise<void>((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = hlsScriptUrl;
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Failed to load HLS runtime."));
+      document.head.append(script);
+    });
+  };
 
-    const loadHlsScript = () => {
-      const existingHls = (window as Window & { Hls?: unknown }).Hls;
-      if (existingHls) {
-        return Promise.resolve();
-      }
+  const initCloudflareHeroVideo = async () => {
+    const cloudflareVideo = document.querySelector("[data-cloudflare-video]");
+    if (!(cloudflareVideo instanceof HTMLVideoElement)) {
+      return;
+    }
 
-      return new Promise<void>((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = hlsScriptUrl;
-        script.async = true;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error("Failed to load HLS runtime."));
-        document.head.append(script);
-      });
-    };
+    const hlsSrc = cloudflareVideo.dataset.cloudflareSrc;
+    if (!hlsSrc) {
+      return;
+    }
 
-    const initCloudflareHeroVideo = async () => {
-      const cloudflareVideo = document.querySelector("[data-cloudflare-video]");
-      if (!(cloudflareVideo instanceof HTMLVideoElement)) {
-        return;
-      }
-
-      const hlsSrc = cloudflareVideo.dataset.cloudflareSrc;
-      if (!hlsSrc) {
-        return;
-      }
-
-      const tryPlay = () => {
-        const playAttempt = cloudflareVideo.play();
-        if (playAttempt instanceof Promise) {
-          playAttempt.catch((error) => {
-            console.warn("Cloudflare hero video autoplay was blocked.", error);
-          });
-        }
-      };
-
-      const canPlayNativeHls =
-        cloudflareVideo.canPlayType("application/vnd.apple.mpegurl") !== "";
-
-      if (canPlayNativeHls) {
-        cloudflareVideo.src = hlsSrc;
-        cloudflareVideo.addEventListener("loadedmetadata", tryPlay, { once: true });
-        cloudflareVideo.load();
-        return;
-      }
-
-      try {
-        await loadHlsScript();
-
-        const HlsCtor = (
-          window as Window & {
-            Hls?: {
-              isSupported: () => boolean;
-              new (): {
-                loadSource: (src: string) => void;
-                attachMedia: (media: HTMLMediaElement) => void;
-              };
-            };
-          }
-        ).Hls;
-
-        if (HlsCtor && HlsCtor.isSupported()) {
-          const hls = new HlsCtor();
-          cloudflareVideo.addEventListener("canplay", tryPlay, { once: true });
-          hls.loadSource(hlsSrc);
-          hls.attachMedia(cloudflareVideo);
-          return;
-        }
-
-        console.warn("Cloudflare hero video could not initialize HLS playback.");
-      } catch (error) {
-        console.warn("Cloudflare hero video failed to initialize.", error);
-      }
-    };
-
-    void initCloudflareHeroVideo();
-
-    const RECAPTCHA_SITE_KEY = "6LcviLsrAAAAACjxjvbZp5mhmku9_-DVmPXCDaPd";
-
-    const loadRecaptchaScript = () => {
-      if (typeof window === "undefined") return Promise.reject(new Error("reCAPTCHA can only run in the browser."));
-
-      if ((window as typeof window & { grecaptcha?: unknown }).grecaptcha) {
-        return Promise.resolve();
-      }
-
-      return new Promise<void>((resolve, reject) => {
-        const existingScript = document.querySelector<HTMLScriptElement>('script[src^="https://www.google.com/recaptcha/api.js"]');
-        if (existingScript) {
-          existingScript.addEventListener("load", () => resolve(), { once: true });
-          existingScript.addEventListener("error", () => reject(new Error("Failed to load reCAPTCHA script.")), {
-            once: true,
-          });
-          return;
-        }
-
-        const script = document.createElement("script");
-        script.src = `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(RECAPTCHA_SITE_KEY)}`;
-        script.async = true;
-        script.defer = true;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error("Failed to load reCAPTCHA script."));
-        document.head.append(script);
-      });
-    };
-
-    const getRecaptchaToken = async () => {
-      if (!RECAPTCHA_SITE_KEY) {
-        throw new Error("Missing reCAPTCHA site key.");
-      }
-
-      await loadRecaptchaScript();
-
-      const grecaptcha = (window as typeof window & { grecaptcha?: { ready: (cb: () => void) => void; execute: (siteKey: string, options: { action: string }) => Promise<string> } }).grecaptcha;
-
-      if (!grecaptcha) {
-        throw new Error("reCAPTCHA is not available on this page.");
-      }
-
-      return new Promise<string>((resolve, reject) => {
-        grecaptcha.ready(() => {
-          grecaptcha
-            .execute(RECAPTCHA_SITE_KEY, { action: "contact_form" })
-            .then((token: string) => resolve(token))
-            .catch((error: unknown) => reject(error));
+    const tryPlay = () => {
+      const playAttempt = cloudflareVideo.play();
+      if (playAttempt instanceof Promise) {
+        playAttempt.catch((error) => {
+          console.warn("Cloudflare hero video autoplay was blocked.", error);
         });
-      });
+      }
     };
 
-    const form = document.querySelector("#contact-form");
+    const canPlayNativeHls =
+      cloudflareVideo.canPlayType("application/vnd.apple.mpegurl") !== "";
 
-    if (form instanceof HTMLFormElement) {
-      const controls = form.querySelectorAll("input, textarea, select");
-      const submitButton = form.querySelector('button[type="submit"]');
-      const submitStatus = form.querySelector("[data-submit-status]");
-      const endpoint =
-        "https://api.clyo.com/umbraco/forms/delivery/api/v1/entries/49ee912c-4928-4b5d-bd5a-3a7768579a17";
-      let hasAttemptedSubmit = false;
+    if (canPlayNativeHls) {
+      cloudflareVideo.src = hlsSrc;
+      cloudflareVideo.addEventListener("loadedmetadata", tryPlay, {
+        once: true,
+      });
+      cloudflareVideo.load();
+      return;
+    }
 
-      const setFieldErrorState = (field: Element) => {
-        if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement)) {
-          return;
+    try {
+      await loadHlsScript();
+
+      const HlsCtor = (
+        window as Window & {
+          Hls?: {
+            isSupported: () => boolean;
+            new (): {
+              loadSource: (src: string) => void;
+              attachMedia: (media: HTMLMediaElement) => void;
+            };
+          };
         }
+      ).Hls;
 
-        const errorTargetName = field.name;
-        const errorElement = form.querySelector(`[data-error-for="${errorTargetName}"]`);
+      if (HlsCtor && HlsCtor.isSupported()) {
+        const hls = new HlsCtor();
+        cloudflareVideo.addEventListener("canplay", tryPlay, { once: true });
+        hls.loadSource(hlsSrc);
+        hls.attachMedia(cloudflareVideo);
+        return;
+      }
 
-        if (!hasAttemptedSubmit) {
-          field.setAttribute("aria-invalid", "false");
-          if (field.type === "checkbox") {
-            const checkboxRow = field.closest("[data-checkbox-row]");
-            if (checkboxRow) {
-              checkboxRow.setAttribute("data-invalid", "false");
-            }
-          }
-          if (errorElement) {
-            errorElement.textContent = "";
-          }
-          return;
-        }
+      console.warn("Cloudflare hero video could not initialize HLS playback.");
+    } catch (error) {
+      console.warn("Cloudflare hero video failed to initialize.", error);
+    }
+  };
 
-        const isInvalid = !field.checkValidity();
+  void initCloudflareHeroVideo();
 
-        field.setAttribute("aria-invalid", String(isInvalid));
+  const RECAPTCHA_SITE_KEY = "6LcviLsrAAAAACjxjvbZp5mhmku9_-DVmPXCDaPd";
 
+  const loadRecaptchaScript = () => {
+    if (typeof window === "undefined")
+      return Promise.reject(
+        new Error("reCAPTCHA can only run in the browser."),
+      );
+
+    if ((window as typeof window & { grecaptcha?: unknown }).grecaptcha) {
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve, reject) => {
+      const existingScript = document.querySelector<HTMLScriptElement>(
+        'script[src^="https://www.google.com/recaptcha/api.js"]',
+      );
+      if (existingScript) {
+        existingScript.addEventListener("load", () => resolve(), {
+          once: true,
+        });
+        existingScript.addEventListener(
+          "error",
+          () => reject(new Error("Failed to load reCAPTCHA script.")),
+          {
+            once: true,
+          },
+        );
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(RECAPTCHA_SITE_KEY)}`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => resolve();
+      script.onerror = () =>
+        reject(new Error("Failed to load reCAPTCHA script."));
+      document.head.append(script);
+    });
+  };
+
+  const getRecaptchaToken = async () => {
+    if (!RECAPTCHA_SITE_KEY) {
+      throw new Error("Missing reCAPTCHA site key.");
+    }
+
+    await loadRecaptchaScript();
+
+    const grecaptcha = (
+      window as typeof window & {
+        grecaptcha?: {
+          ready: (cb: () => void) => void;
+          execute: (
+            siteKey: string,
+            options: { action: string },
+          ) => Promise<string>;
+        };
+      }
+    ).grecaptcha;
+
+    if (!grecaptcha) {
+      throw new Error("reCAPTCHA is not available on this page.");
+    }
+
+    return new Promise<string>((resolve, reject) => {
+      grecaptcha.ready(() => {
+        grecaptcha
+          .execute(RECAPTCHA_SITE_KEY, { action: "contact_form" })
+          .then((token: string) => resolve(token))
+          .catch((error: unknown) => reject(error));
+      });
+    });
+  };
+
+  const form = document.querySelector("#contact-form");
+
+  if (form instanceof HTMLFormElement) {
+    const controls = form.querySelectorAll("input, textarea, select");
+    const submitButton = form.querySelector('button[type="submit"]');
+    const submitStatus = form.querySelector("[data-submit-status]");
+    const endpoint =
+      "https://api.clyo.com/umbraco/forms/delivery/api/v1/entries/49ee912c-4928-4b5d-bd5a-3a7768579a17";
+    let hasAttemptedSubmit = false;
+
+    const setFieldErrorState = (field: Element) => {
+      if (
+        !(
+          field instanceof HTMLInputElement ||
+          field instanceof HTMLTextAreaElement ||
+          field instanceof HTMLSelectElement
+        )
+      ) {
+        return;
+      }
+
+      const errorTargetName = field.name;
+      const errorElement = form.querySelector(
+        `[data-error-for="${errorTargetName}"]`,
+      );
+
+      if (!hasAttemptedSubmit) {
+        field.setAttribute("aria-invalid", "false");
         if (field.type === "checkbox") {
           const checkboxRow = field.closest("[data-checkbox-row]");
           if (checkboxRow) {
-            checkboxRow.setAttribute("data-invalid", String(isInvalid));
+            checkboxRow.setAttribute("data-invalid", "false");
           }
         }
-
         if (errorElement) {
-          errorElement.textContent = isInvalid ? field.validationMessage : "";
+          errorElement.textContent = "";
         }
+        return;
+      }
+
+      const isInvalid = !field.checkValidity();
+
+      field.setAttribute("aria-invalid", String(isInvalid));
+
+      if (field.type === "checkbox") {
+        const checkboxRow = field.closest("[data-checkbox-row]");
+        if (checkboxRow) {
+          checkboxRow.setAttribute("data-invalid", String(isInvalid));
+        }
+      }
+
+      if (errorElement) {
+        errorElement.textContent = isInvalid ? field.validationMessage : "";
+      }
+    };
+
+    controls.forEach((field: Element) => {
+      setFieldErrorState(field);
+      field.addEventListener("blur", () => setFieldErrorState(field));
+      field.addEventListener("input", () => setFieldErrorState(field));
+      field.addEventListener("change", () => setFieldErrorState(field));
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      hasAttemptedSubmit = true;
+
+      const formData = new FormData(form);
+      const payload = {
+        ...Object.fromEntries(formData.entries()),
+        privacyConsent: formData.has("privacyConsent"),
+        marketingOptIn: formData.has("marketingOptIn"),
       };
+
+      console.log("Holding page form submission", payload);
 
       controls.forEach((field: Element) => {
         setFieldErrorState(field);
-        field.addEventListener("blur", () => setFieldErrorState(field));
-        field.addEventListener("input", () => setFieldErrorState(field));
-        field.addEventListener("change", () => setFieldErrorState(field));
       });
 
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        hasAttemptedSubmit = true;
+      if (!form.checkValidity()) {
+        console.warn("Form has validation errors.");
+        const firstInvalid = form.querySelector('[aria-invalid="true"]');
+        if (firstInvalid instanceof HTMLElement) {
+          firstInvalid.focus();
+        }
+        return;
+      }
 
-        const formData = new FormData(form);
-        const payload = {
-          ...Object.fromEntries(formData.entries()),
-          privacyConsent: formData.has("privacyConsent"),
-          marketingOptIn: formData.has("marketingOptIn"),
+      const values = {
+        ...payload,
+        domainAddress: window.location.hostname,
+      };
+
+      if (submitButton instanceof HTMLButtonElement) {
+        submitButton.disabled = true;
+      }
+
+      if (submitStatus instanceof HTMLElement) {
+        submitStatus.textContent = "Submitting...";
+        submitStatus.classList.remove("hidden", "text-[var(--destructive)]");
+        submitStatus.classList.add("text-[var(--color-grey)]");
+      }
+
+      try {
+        const recaptcha = await getRecaptchaToken();
+
+        const body = {
+          values: {
+            ...values,
+            recaptcha,
+          },
         };
 
-        console.log("Holding page form submission", payload);
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
 
+        if (!response.ok) {
+          throw new Error(
+            `Form submission failed with status ${response.status}`,
+          );
+        }
+
+        console.log("Holding page form submitted", body);
+
+        if (submitStatus instanceof HTMLElement) {
+          submitStatus.textContent =
+            "Thank you. Your message has been submitted.";
+          submitStatus.classList.remove(
+            "text-[var(--destructive)]",
+            "text-[var(--color-grey)]",
+          );
+          submitStatus.classList.add("text-[var(--color-night)]");
+        }
+
+        form.reset();
+        hasAttemptedSubmit = false;
         controls.forEach((field: Element) => {
           setFieldErrorState(field);
         });
-
-        if (!form.checkValidity()) {
-          console.warn("Form has validation errors.");
-          const firstInvalid = form.querySelector('[aria-invalid="true"]');
-          if (firstInvalid instanceof HTMLElement) {
-            firstInvalid.focus();
-          }
-          return;
-        }
-
-        const values = {
-          ...payload,
-          domainAddress: window.location.hostname,
-        };
-
-        if (submitButton instanceof HTMLButtonElement) {
-          submitButton.disabled = true;
-        }
+      } catch (error) {
+        console.error("Holding page form submission failed", error);
 
         if (submitStatus instanceof HTMLElement) {
-          submitStatus.textContent = "Submitting...";
-          submitStatus.classList.remove("hidden", "text-[var(--destructive)]");
-          submitStatus.classList.add("text-[var(--color-grey)]");
+          submitStatus.textContent =
+            "Something went wrong while submitting the form. Please try again.";
+          submitStatus.classList.remove("hidden", "text-[var(--color-grey)]");
+          submitStatus.classList.add("text-[var(--destructive)]");
         }
-
-        try {
-          const recaptcha = await getRecaptchaToken();
-
-          const body = {
-            values: {
-              ...values,
-              recaptcha,
-            },
-          };
-
-          const response = await fetch(endpoint, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-          });
-
-          if (!response.ok) {
-            throw new Error(`Form submission failed with status ${response.status}`);
-          }
-
-          console.log("Holding page form submitted", body);
-
-          if (submitStatus instanceof HTMLElement) {
-            submitStatus.textContent = "Thank you. Your message has been submitted.";
-            submitStatus.classList.remove("text-[var(--destructive)]", "text-[var(--color-grey)]");
-            submitStatus.classList.add("text-[var(--color-night)]");
-          }
-
-          form.reset();
-          hasAttemptedSubmit = false;
-          controls.forEach((field: Element) => {
-            setFieldErrorState(field);
-          });
-        } catch (error) {
-          console.error("Holding page form submission failed", error);
-
-          if (submitStatus instanceof HTMLElement) {
-            submitStatus.textContent =
-              "Something went wrong while submitting the form. Please try again.";
-            submitStatus.classList.remove("hidden", "text-[var(--color-grey)]");
-            submitStatus.classList.add("text-[var(--destructive)]");
-          }
-        } finally {
-          if (submitButton instanceof HTMLButtonElement) {
-            submitButton.disabled = false;
-          }
+      } finally {
+        if (submitButton instanceof HTMLButtonElement) {
+          submitButton.disabled = false;
         }
-      });
-    }
-  </script>
-</BaseLayout>
+      }
+    });
+  }
+</script>
