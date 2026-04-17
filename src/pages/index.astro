@@ -16,7 +16,7 @@ const cloudflareHlsSrc = heroMedia.cloudflareVideoId
 const inputClasses =
   "h-[42px] w-full rounded-[6px] border border-[var(--color-ivory)] bg-transparent px-[14px] py-[10px] font-[var(--font-serif)] text-[14px] leading-[18px] text-[var(--color-night)] outline-none placeholder:text-(--color-cloud-white)/80 focus:border-[var(--color-sky-blue)] aria-[invalid=true]:border-[var(--destructive)] aria-[invalid=true]:focus:shadow-[0_0_0_3px_oklch(0.577_0.245_27.325_/_0.2)]";
 const checkboxClasses =
-  "mt-[2px] h-[14px] w-[14px] shrink-0 accent-[var(--color-sky-blue)] aria-[invalid=true]:outline aria-[invalid=true]:outline-1 aria-[invalid=true]:outline-[var(--destructive)] aria-[invalid=true]:outline-offset-1";
+  "mt-[2px] h-[14px] w-[14px] shrink-0 rounded-[2px] border border-[var(--color-ivory)] bg-[var(--color-cloud-white)] accent-[var(--color-sky-blue)] aria-[invalid=true]:outline aria-[invalid=true]:outline-1 aria-[invalid=true]:outline-[var(--destructive)] aria-[invalid=true]:outline-offset-1";
 const errorClasses =
   "mt-[6px] hidden font-[var(--font-sans)] text-[12px] leading-[16px] text-[var(--destructive)] not-empty:block";
 const checkboxRowClasses =
@@ -528,7 +528,7 @@ const submitButtonClasses =
             "text-[var(--destructive)]",
             "text-[var(--color-grey)]",
           );
-          submitStatus.classList.add("text-[var(--color-night)]");
+          submitStatus.classList.add("text-(--color-cloud-white)");
         }
 
         form.reset();
