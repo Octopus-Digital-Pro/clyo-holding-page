@@ -180,6 +180,7 @@ const submitButtonClasses =
                 <span>
                   I agree to receive emails from Clyo. See
                   <a
+                    class="underline"
                     href="/01%20-%20Introduction.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -398,7 +399,7 @@ const submitButtonClasses =
     const submitButton = form.querySelector('button[type="submit"]');
     const submitStatus = form.querySelector("[data-submit-status]");
     const endpoint =
-      "https://api.clyo.com/umbraco/forms/delivery/api/v1/entries/49ee912c-4928-4b5d-bd5a-3a7768579a17";
+      "https://qa-api.clyo.com/umbraco/forms/delivery/api/v1/entries/bb9719e8-7c1c-4343-acef-8fe274c07129";
     let hasAttemptedSubmit = false;
 
     const setFieldErrorState = (field: Element) => {
@@ -462,7 +463,6 @@ const submitButtonClasses =
       const payload = {
         ...Object.fromEntries(formData.entries()),
         privacyConsent: formData.has("privacyConsent"),
-        marketingOptIn: formData.has("marketingOptIn"),
       };
 
       console.log("Holding page form submission", payload);
