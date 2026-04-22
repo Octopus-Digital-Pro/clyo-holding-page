@@ -7,7 +7,7 @@ const heroMedia = {
   // Set a value like "/hero-video.mp4" to enable hero video.
   videoSrc: "",
   // Set a Cloudflare Stream video ID to use the embedded player.
-  cloudflareVideoId: "",
+  cloudflareVideoId: "9de23cd6caa7a5f4911f3ae0150904d2",
 };
 const cloudflareHlsSrc = heroMedia.cloudflareVideoId
   ? `https://videodelivery.net/${heroMedia.cloudflareVideoId}/manifest/video.m3u8`
@@ -33,34 +33,54 @@ const submitButtonClasses =
       >
         {
           heroMedia.cloudflareVideoId ? (
-            <video
-              class="block h-full w-full object-cover object-center"
-              data-cloudflare-video
-              data-cloudflare-src={cloudflareHlsSrc}
-              autoplay
-              muted
-              loop
-              playsinline
-              preload="metadata"
-              poster={heroMedia.imageSrc}
-              crossorigin="anonymous"
-              aria-label={heroMedia.imageAlt}
-            >
-              <source src={cloudflareHlsSrc} type="application/x-mpegURL" />
-            </video>
+            <div class="relative h-full w-full">
+              <img
+                class="block h-full w-full object-cover object-center transition-opacity duration-500"
+                data-hero-fallback
+                src={heroMedia.imageSrc}
+                alt={heroMedia.imageAlt}
+                loading="eager"
+              />
+              <video
+                class="absolute inset-0 block h-full w-full object-cover object-center opacity-0 transition-opacity duration-500"
+                data-hero-video
+                data-cloudflare-video
+                data-cloudflare-src={cloudflareHlsSrc}
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                poster={heroMedia.imageSrc}
+                crossorigin="anonymous"
+                aria-label={heroMedia.imageAlt}
+              >
+                <source src={cloudflareHlsSrc} type="application/x-mpegURL" />
+              </video>
+            </div>
           ) : heroMedia.videoSrc ? (
-            <video
-              class="block h-full w-full object-cover object-center"
-              autoplay
-              muted
-              loop
-              playsinline
-              preload="metadata"
-              poster={heroMedia.imageSrc}
-              aria-label={heroMedia.imageAlt}
-            >
-              <source src={heroMedia.videoSrc} type="video/mp4" />
-            </video>
+            <div class="relative h-full w-full">
+              <img
+                class="block h-full w-full object-cover object-center transition-opacity duration-500"
+                data-hero-fallback
+                src={heroMedia.imageSrc}
+                alt={heroMedia.imageAlt}
+                loading="eager"
+              />
+              <video
+                class="absolute inset-0 block h-full w-full object-cover object-center opacity-0 transition-opacity duration-500"
+                data-hero-video
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                poster={heroMedia.imageSrc}
+                aria-label={heroMedia.imageAlt}
+              >
+                <source src={heroMedia.videoSrc} type="video/mp4" />
+              </video>
+            </div>
           ) : (
             <img
               class="block h-full w-full object-cover object-center"
@@ -79,11 +99,11 @@ const submitButtonClasses =
         <div
           class="absolute inset-0 z-20 h-full w-full px-4 py-6 text-(--color-cloud-white) md:py-8 xl:py-10"
         >
-          <div class="relative z-10 flex items-center justify-center invert">
+          <div class="relative z-10 flex items-center justify-center">
             <img
-              src="/logo.svg"
+              src="/CLYO_Hotels&Resorts_CloudWhite-01.png"
               alt="CLYO Hotels and Resorts"
-              class="w-24 h-auto"
+              class="w-24 h-auto brightness-0 invert"
             />
           </div>
 
@@ -93,54 +113,28 @@ const submitButtonClasses =
             <div
               class="flex md:max-w-[85vw] mb-16 flex-col items-center justify-center"
             >
-              <p
-                class="subheading-text uppercase font-medium mb-4 text-white [font-family:var(--font-futura)] text-[16px] tracking-[1px]"
-              >
-                Coming Soon
-              </p>
               <h1
                 class="text-[48px] font-serif leading-none font-light tracking-tight mb-8"
                 style="animation-delay:0s"
               >
-                CLYO Hotels and Resorts
+                Coming Soon
               </h1>
               <p
                 class="text-[16px] md:text-[18px] xl:text-[20px] font-serif leading-[1.2] font-light tracking-tight max-w-[min(60%,680px)]"
               >
-                We're coming soon - when the sun rises, we stir. When it’s time
-                to move, we dance. When curiosity calls, we discover. In nature.
-                In luxury. In every memory.
+                When the sun rises, we stir. When it’s time to move, we dance.
+                When curiosity calls, we discover. In nature. In luxury. In
+                every memory.
               </p>
             </div>
           </div>
 
           <form
-            class="absolute left-1/2 top-[calc(50%+clamp(5.5rem,10vh,8.5rem))] z-10 grid w-[calc(100%-2rem)] max-w-[648px] -translate-x-1/2 gap-6"
+            class="absolute left-1/2 top-[calc(50%+clamp(5.5rem,10vh,8.5rem))] z-10 grid w-[calc(100%-2rem)] max-w-[348px] -translate-x-1/2 gap-6"
             id="contact-form"
             novalidate
           >
-            <div class="grid grid-cols-2 gap-4">
-              <label class="block">
-                <span
-                  class="absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
-                >
-                  Full Name
-                </span>
-                <input
-                  id="name"
-                  class={inputClasses}
-                  type="text"
-                  name="name"
-                  placeholder="Full name*"
-                  required
-                />
-                <p
-                  class={errorClasses}
-                  data-error-for="name"
-                  aria-live="polite"
-                >
-                </p>
-              </label>
+            <div class="grid gap-4">
               <label class="block">
                 <span
                   class="absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
@@ -244,6 +238,35 @@ const submitButtonClasses =
   const hlsScriptUrl =
     "https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js";
 
+  const initHeroVideoReveal = () => {
+    const heroVideo = document.querySelector("[data-hero-video]");
+    const heroFallback = document.querySelector("[data-hero-fallback]");
+    if (
+      !(heroVideo instanceof HTMLVideoElement) ||
+      !(heroFallback instanceof HTMLImageElement)
+    ) {
+      return;
+    }
+
+    const revealVideo = () => {
+      heroVideo.classList.remove("opacity-0");
+      heroFallback.classList.add("opacity-0");
+      heroFallback.setAttribute("aria-hidden", "true");
+    };
+
+    if (heroVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      revealVideo();
+    }
+
+    heroVideo.addEventListener("loadeddata", revealVideo, { once: true });
+    heroVideo.addEventListener("canplay", revealVideo, { once: true });
+    heroVideo.addEventListener("error", () => {
+      heroVideo.classList.add("opacity-0");
+      heroFallback.classList.remove("opacity-0");
+      heroFallback.removeAttribute("aria-hidden");
+    });
+  };
+
   const loadHlsScript = () => {
     const existingHls = (window as Window & { Hls?: unknown }).Hls;
     if (existingHls) {
@@ -321,6 +344,7 @@ const submitButtonClasses =
     }
   };
 
+  initHeroVideoReveal();
   void initCloudflareHeroVideo();
 
   const RECAPTCHA_SITE_KEY = "6LcviLsrAAAAACjxjvbZp5mhmku9_-DVmPXCDaPd";
