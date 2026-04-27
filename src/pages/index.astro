@@ -22,7 +22,7 @@ const errorClasses =
 const checkboxRowClasses =
   "flex items-center justify-center gap-[10px] font-[var(--font-serif)] text-[14px] leading-[18px] data-[invalid=true]:text-[var(--destructive)] [&_a]:underline";
 const submitButtonClasses =
-  "inline-flex min-w-[142px] items-center justify-center gap-6 rounded-[10px] border border-[var(--color-ivory)] bg-transparent px-7 py-[14px] font-[var(--font-sans)] text-[12px] font-medium uppercase tracking-[1px] leading-[16px] text-[var(--color-night)] transition hover:bg-[rgba(224,208,184,0.25)] xl:px-[50px] xl:text-[14px] xl:leading-[18px]";
+  "inline-flex w-fit items-center justify-center gap-4 rounded-[10px] border border-[var(--color-ivory)] bg-transparent px-5 py-[10px] font-[var(--font-sans)] text-[12px] font-medium uppercase tracking-[1px] leading-[16px] text-[var(--color-night)] transition hover:bg-[rgba(224,208,184,0.25)] xl:px-[32px] xl:text-[14px] xl:leading-[18px] hover:cursor-pointer";
 ---
 
 <BaseLayout title="CLYO Hotels & Resorts" description="CLYO Hotels & Resorts.">
@@ -111,7 +111,7 @@ const submitButtonClasses =
             class="absolute inset-0 flex items-center justify-center px-4 text-center"
           >
             <div
-              class="flex md:max-w-[85vw] mb-16 flex-col items-center justify-center"
+              class="mb-16 flex w-full flex-col items-center justify-center md:max-w-[85vw]"
             >
               <h1
                 class="text-[48px] font-serif leading-none font-light tracking-tight mb-8"
@@ -120,11 +120,12 @@ const submitButtonClasses =
                 Coming Soon
               </h1>
               <p
-                class="text-[16px] md:text-[18px] xl:text-[20px] font-serif leading-[1.2] font-light tracking-tight max-w-[min(60%,680px)]"
+                class="w-full max-w-[680px] text-[16px] font-serif leading-[1.2] font-light tracking-tight md:text-[18px] xl:text-[20px]"
               >
-                When the sun rises, we stir. When it’s time to move, we dance.
-                When curiosity calls, we discover. In nature. In luxury. In
-                every memory.
+                When the sun rises, we stir. When it’s time to move, we dance. <br
+                />
+                When curiosity calls, we discover. In nature. In luxury. In every
+                memory.
               </p>
             </div>
           </div>
@@ -178,7 +179,7 @@ const submitButtonClasses =
                   required
                 />
                 <span>
-                  I agree to receive emails from Clyo. See
+                  I agree to receive emails from CLYO. See
                   <a
                     class="underline"
                     href="/01%20-%20Introduction.pdf"
@@ -200,7 +201,7 @@ const submitButtonClasses =
 
             <div class="flex justify-center">
               <button class={submitButtonClasses} type="submit">
-                <span>Submit</span>
+                <span>Stay tuned</span>
                 <svg
                   viewBox="0 0 24 24"
                   width="16"
