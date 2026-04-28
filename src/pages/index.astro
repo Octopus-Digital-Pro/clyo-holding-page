@@ -47,7 +47,6 @@ const submitButtonClasses =
                 data-cloudflare-video
                 data-cloudflare-src={cloudflareHlsSrc}
                 autoplay
-                muted
                 loop
                 playsinline
                 preload="metadata"
@@ -71,7 +70,6 @@ const submitButtonClasses =
                 class="absolute inset-0 block h-full w-full object-cover object-center opacity-0 transition-opacity duration-500"
                 data-hero-video
                 autoplay
-                muted
                 loop
                 playsinline
                 preload="metadata"
@@ -230,6 +228,20 @@ const submitButtonClasses =
             >
             </p>
           </form>
+          <button
+            type="button"
+            class="absolute bottom-6 right-6 z-30 hover:cursor-pointer inline-flex h-12 w-12 items-center justify-center"
+            data-video-mute-toggle
+            aria-label="Mute video"
+          >
+            <img
+              src="/sound-on.svg"
+              alt=""
+              aria-hidden="true"
+              class="h-9 w-9"
+              data-video-mute-icon
+            />
+          </button>
         </div>
       </div>
     </section>
@@ -269,6 +281,44 @@ const submitButtonClasses =
     });
   };
 
+  const initHeroVideoAudioControl = () => {
+    const heroVideo = document.querySelector("[data-hero-video]");
+    const muteToggle = document.querySelector("[data-video-mute-toggle]");
+    const muteIcon = document.querySelector("[data-video-mute-icon]");
+    if (
+      !(heroVideo instanceof HTMLVideoElement) ||
+      !(muteToggle instanceof HTMLButtonElement) ||
+      !(muteIcon instanceof HTMLImageElement)
+    ) {
+      return;
+    }
+
+    heroVideo.muted = false;
+    heroVideo.volume = 1;
+
+    const updateMuteButton = () => {
+      const isMuted = heroVideo.muted || heroVideo.volume === 0;
+      muteToggle.setAttribute("aria-pressed", String(isMuted));
+      muteToggle.setAttribute(
+        "aria-label",
+        isMuted ? "Unmute video" : "Mute video",
+      );
+      muteToggle.classList.toggle("opacity-70", isMuted);
+      muteIcon.src = isMuted ? "/mute.svg" : "/sound-on.svg";
+    };
+
+    muteToggle.addEventListener("click", () => {
+      const shouldMute = !(heroVideo.muted || heroVideo.volume === 0);
+      heroVideo.muted = shouldMute;
+      if (!shouldMute && heroVideo.volume === 0) {
+        heroVideo.volume = 1;
+      }
+      updateMuteButton();
+    });
+
+    updateMuteButton();
+  };
+
   const loadHlsScript = () => {
     const existingHls = (window as Window & { Hls?: unknown }).Hls;
     if (existingHls) {
@@ -304,6 +354,9 @@ const submitButtonClasses =
         });
       }
     };
+
+    cloudflareVideo.muted = false;
+    cloudflareVideo.volume = 1;
 
     const canPlayNativeHls =
       cloudflareVideo.canPlayType("application/vnd.apple.mpegurl") !== "";
@@ -347,7 +400,26 @@ const submitButtonClasses =
   };
 
   initHeroVideoReveal();
+  initHeroVideoAudioControl();
   void initCloudflareHeroVideo();
+
+  const heroVideo = document.querySelector("[data-hero-video]");
+  if (heroVideo instanceof HTMLVideoElement) {
+    const ensurePlayWithSound = () => {
+      heroVideo.muted = false;
+      heroVideo.volume = 1;
+      const attempt = heroVideo.play();
+      if (attempt instanceof Promise) {
+        attempt.catch(() => {
+          // Some browsers block unmuted autoplay until user interaction.
+        });
+      }
+    };
+
+    ensurePlayWithSound();
+    window.addEventListener("pointerdown", ensurePlayWithSound, { once: true });
+    window.addEventListener("keydown", ensurePlayWithSound, { once: true });
+  }
 
   const RECAPTCHA_SITE_KEY = "6LcviLsrAAAAACjxjvbZp5mhmku9_-DVmPXCDaPd";
 
