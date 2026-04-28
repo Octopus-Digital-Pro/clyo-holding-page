@@ -8,10 +8,13 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "preview": "npm run build && wrangler dev",
+    "astro": "astro",
+    "generate-types": "wrangler types",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^13.2.1",
     "@astrojs/node": "^10.0.5",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.1.7",
@@ -20,6 +23,10 @@
   },
   "devDependencies": {
     "prettier": "3.8.3",
-    "prettier-plugin-astro": "^0.14.1"
+    "prettier-plugin-astro": "^0.14.1",
+    "wrangler": "^4.85.0"
+  },
+  "overrides": {
+    "vite": "^7"
   }
 }
