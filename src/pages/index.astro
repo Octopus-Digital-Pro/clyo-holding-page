@@ -83,14 +83,13 @@ const submitButtonClasses =
                 data-mux-src={muxHlsSrc}
                 autoplay
                 loop
+                muted
                 playsinline
                 preload="metadata"
                 poster={heroMedia.imageSrc}
                 crossorigin="anonymous"
                 aria-label={heroMedia.imageAlt}
-              >
-                <source src={muxHlsSrc} type="application/x-mpegURL" />
-              </video>
+              />
             </div>
           ) : (
             <img
@@ -220,12 +219,13 @@ const submitButtonClasses =
               heroMedia.videoSrc) && (
               <button
                 type="button"
-                class="absolute bottom-6 right-6 z-30 hover:cursor-pointer inline-flex h-12 w-12 items-center justify-center"
+                class="absolute bottom-4 right-4  z-30 hover:cursor-pointer inline-flex h-12 w-12 items-center justify-center"
                 data-video-mute-toggle
-                aria-label="Mute video"
+                aria-label="Unmute video"
+                aria-pressed="true"
               >
                 <img
-                  src="/sound-on.svg"
+                  src="/mute.svg"
                   alt=""
                   aria-hidden="true"
                   class="h-9 w-9"
@@ -285,7 +285,9 @@ const submitButtonClasses =
       return;
     }
 
-    heroVideo.muted = false;
+    // Browsers only allow autoplay while muted, so the video always start silent
+    // and only the unmute button below turns sound on.
+    heroVideo.muted = true;
     heroVideo.volume = 1;
 
     const updateMuteButton = () => {
@@ -298,6 +300,9 @@ const submitButtonClasses =
       muteToggle.classList.toggle("opacity-70", isMuted);
       muteIcon.src = isMuted ? "/mute.svg" : "/sound-on.svg";
     };
+
+    // Keeps the icon in sync no matter which code path changes the volume.
+    heroVideo.addEventListener("volumechange", updateMuteButton);
 
     muteToggle.addEventListener("click", () => {
       const shouldMute = !(heroVideo.muted || heroVideo.volume === 0);
@@ -350,27 +355,8 @@ const submitButtonClasses =
 
   initHeroVideoReveal();
   initHeroVideoAudioControl();
-  // Cloudflare Stream playback — temporarily disabled with cloudflareVideoId.
-  // Restore: uncomment the next line when company CF Stream access is back.
+  // Cloudflare Stream playback - to Restore: uncomment the next line
   // void initCloudflareHeroVideo();
-
-  const heroVideo = document.querySelector("[data-hero-video]");
-  if (heroVideo instanceof HTMLVideoElement) {
-    const ensurePlayWithSound = () => {
-      heroVideo.muted = false;
-      heroVideo.volume = 1;
-      const attempt = heroVideo.play();
-      if (attempt instanceof Promise) {
-        attempt.catch(() => {
-          // Some browsers block unmuted autoplay until user interaction.
-        });
-      }
-    };
-
-    ensurePlayWithSound();
-    window.addEventListener("pointerdown", ensurePlayWithSound, { once: true });
-    window.addEventListener("keydown", ensurePlayWithSound, { once: true });
-  }
 
   const initMuxHeroVideo = async () => {
     const muxVideo = document.querySelector("[data-mux-video]");
@@ -392,7 +378,9 @@ const submitButtonClasses =
       }
     };
 
-    muxVideo.muted = false;
+    // Must stay muted for autoplay to be permitted; sound is enabled by the
+    // unmute button in initHeroVideoAudioControl.
+    muxVideo.muted = true;
     muxVideo.volume = 1;
 
     const canPlayNativeHls =
