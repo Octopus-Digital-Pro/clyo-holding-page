@@ -6,24 +6,31 @@ interface Props {
   description?: string;
   ogImage?: string;
   ogImageAlt?: string;
+  ogImageWidth?: string;
+  ogImageHeight?: string;
+  ogImageType?: string;
   ogType?: "website" | "article";
   noindex?: boolean;
 }
 
+const siteName = "CLYO Hotels & Resorts";
+
 const {
-  title = "CLYO Holding Page",
-  description = "A lightweight coming soon holding page for CLYO.",
-  ogImage = "/hero-image.webp",
+  title = siteName,
+  description = "CLYO Hotels & Resorts is coming soon. Join the list to be the first to hear when our doors open.",
+  ogImage = "/og-image.jpg",
   ogImageAlt = "A serene resort pool lined with palm trees at sunset.",
+  ogImageWidth = "1200",
+  ogImageHeight = "630",
+  ogImageType = "image/jpeg",
   ogType = "website",
   noindex = false,
 } = Astro.props;
 
-const siteName = "CLYO Hotels & Resorts";
 const locale = "en_US";
-const ogImageWidth = "1503";
-const ogImageHeight = "1002";
-const ogImageType = "image/webp";
+
+// Secondary pages carry the brand; the homepage title is already the brand.
+const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 
 const canonicalUrl = new URL(
   Astro.url.pathname,
@@ -46,24 +53,24 @@ const robotsContent = noindex ? "noindex, nofollow" : "index, follow";
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={siteName} />
     <meta property="og:locale" content={locale} />
-    <meta property="og:title" content={title} />
+    <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:secure_url" content={ogImageUrl} />
     <meta property="og:image:alt" content={ogImageAlt} />
     <meta property="og:image:type" content={ogImageType} />
     <meta property="og:image:width" content={ogImageWidth} />
     <meta property="og:image:height" content={ogImageHeight} />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
+    <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
     <meta name="twitter:image:alt" content={ogImageAlt} />
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
-    <title>{title}</title>
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <title>{pageTitle}</title>
   </head>
   <body>
     <slot />

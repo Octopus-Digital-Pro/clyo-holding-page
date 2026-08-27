@@ -35,7 +35,11 @@ const submitButtonClasses =
   "inline-flex w-fit items-center justify-center gap-4 rounded-[10px] border border-[var(--color-ivory)] bg-transparent px-5 py-[10px] font-[var(--font-sans)] text-[12px] font-medium uppercase tracking-[1px] leading-[16px] text-[var(--color-night)] transition hover:bg-[rgba(224,208,184,0.25)] xl:px-[32px] xl:text-[14px] xl:leading-[18px] hover:cursor-pointer";
 ---
 
-<BaseLayout title="CLYO Hotels & Resorts" description="CLYO Hotels & Resorts.">
+<BaseLayout
+  title="CLYO Hotels & Resorts"
+  description="CLYO Hotels & Resorts is coming soon. Join the list to be the first to hear when our doors open."
+  noindex
+>
   <main>
     <section class="h-screen w-full" aria-label="Hero image">
       <div
@@ -572,7 +576,7 @@ const submitButtonClasses =
         privacyConsent: formData.has("privacyConsent"),
       };
 
-      console.log("Holding page form submission", payload);
+      // console.log("Holding page form submission", payload);
 
       controls.forEach((field: Element) => {
         setFieldErrorState(field);
@@ -626,7 +630,7 @@ const submitButtonClasses =
           );
         }
 
-        console.log("Holding page form submitted", body);
+        // console.log("Holding page form submitted", body);
 
         if (submitStatus instanceof HTMLElement) {
           submitStatus.textContent =
