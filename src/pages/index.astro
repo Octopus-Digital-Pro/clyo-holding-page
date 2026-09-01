@@ -99,6 +99,12 @@ const submitButtonClasses =
         <div
           class="absolute inset-0 z-20 h-full w-full px-4 py-6 text-(--color-cloud-white) md:py-8 xl:py-10"
         >
+          <p
+            class="absolute left-4 top-4 z-30 hidden max-w-[min(90%,600px)] font-[var(--font-sans)] text-[24px] font-bold uppercase leading-[1.3] text-[#ff2d2d]"
+            data-autoplay-debug
+            role="alert"
+          >
+          </p>
           <div
             class="absolute inset-0 flex items-center justify-center px-4 text-center"
           >
@@ -232,11 +238,44 @@ const submitButtonClasses =
   const hlsScriptUrl =
     "https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js";
 
+  // Diagnostic notice proving an autoplay failure came from the browser's
+  // policy (NotAllowedError), not the page. Gated behind ?autoplay-debug so
+  // real visitors never see it — share clyo.com/?autoplay-debug to reproduce.
+  const autoplayDebugEnabled = new URLSearchParams(window.location.search).has(
+    "autoplay-debug",
+  );
+
+  const showAutoplayBlockedNotice = (error: DOMException) => {
+    if (!autoplayDebugEnabled) {
+      return;
+    }
+    const notice = document.querySelector("[data-autoplay-debug]");
+    if (!(notice instanceof HTMLElement) || !notice.classList.contains("hidden")) {
+      return;
+    }
+    notice.textContent = `Autoplay blocked by this browser/device (${error.name})`;
+    notice.classList.remove("hidden");
+
+    // If playback later starts (e.g. the user taps the native play button),
+    // the notice would be stale — remove it.
+    const heroVideo = document.querySelector("[data-hero-video]");
+    if (heroVideo instanceof HTMLVideoElement) {
+      heroVideo.addEventListener(
+        "playing",
+        () => notice.classList.add("hidden"),
+        { once: true },
+      );
+    }
+  };
+
   const playHeroVideo = (video: HTMLVideoElement) => {
     const playAttempt = video.play();
     if (playAttempt instanceof Promise) {
       playAttempt.catch((error) => {
         console.warn("Hero video playback was blocked.", error);
+        if (error instanceof DOMException && error.name === "NotAllowedError") {
+          showAutoplayBlockedNotice(error);
+        }
       });
     }
   };
