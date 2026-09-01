@@ -250,7 +250,10 @@ const submitButtonClasses =
       return;
     }
     const notice = document.querySelector("[data-autoplay-debug]");
-    if (!(notice instanceof HTMLElement) || !notice.classList.contains("hidden")) {
+    if (
+      !(notice instanceof HTMLElement) ||
+      !notice.classList.contains("hidden")
+    ) {
       return;
     }
     notice.textContent = `Autoplay blocked by this browser/device (${error.name})`;
@@ -289,8 +292,12 @@ const submitButtonClasses =
     heroVideo.loop = true;
 
     const restartPlayback = () => {
-      if (heroVideo.currentTime > 0) {
-        heroVideo.currentTime = 0;
+      try {
+        if (heroVideo.currentTime > 0) {
+          heroVideo.currentTime = 0;
+        }
+      } catch (error) {
+        console.warn("Hero video could not rewind.", error);
       }
       playHeroVideo(heroVideo);
     };
@@ -403,12 +410,14 @@ const submitButtonClasses =
       heroVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
     ) {
       revealVideo();
-    } else {
-      heroVideo.addEventListener("playing", revealVideo, { once: true });
     }
 
+    // Not { once: true }: playback can drop out and recover, and the hero has
+    // to fade back in when it does.
+    heroVideo.addEventListener("playing", revealVideo);
+
     heroVideo.addEventListener("error", () => {
-      revealed = true;
+      revealed = false;
       window.clearTimeout(hideFallbackTimeout);
       heroVideo.classList.add("opacity-0");
       heroFallback.classList.remove("opacity-0");
@@ -490,10 +499,7 @@ const submitButtonClasses =
     cloudflareVideo.muted = true;
     cloudflareVideo.volume = 1;
 
-    const canPlayNativeHls =
-      cloudflareVideo.canPlayType("application/vnd.apple.mpegurl") !== "";
-
-    if (canPlayNativeHls) {
+    const playNativeHls = () => {
       cloudflareVideo.src = preferHighQuality
         ? withBandwidthHint(hlsSrc, 5)
         : hlsSrc;
@@ -504,6 +510,17 @@ const submitButtonClasses =
       // warming up; retry once the browser reports it can actually play.
       cloudflareVideo.addEventListener("canplay", tryPlay, { once: true });
       cloudflareVideo.load();
+    };
+
+    // Chrome answers "maybe" to canPlayType("application/vnd.apple.mpegurl")
+    // and will happily play the manifest through its own HLS pipeline — but
+    // that pipeline dies with DEMUXER_ERROR_COULD_NOT_PARSE the moment the
+    // loop seeks back to 0, which left the hero stuck on its fallback image.
+    // hls.js loops correctly, so it handles playback wherever MediaSource
+    // exists. Native playback stays for iPhone Safari, which has no MSE and
+    // loops HLS without complaint.
+    if (!("MediaSource" in window)) {
+      playNativeHls();
       return;
     }
 
@@ -514,62 +531,151 @@ const submitButtonClasses =
         window as Window & {
           Hls?: {
             isSupported: () => boolean;
-            Events: { MANIFEST_PARSED: string };
+            Events: { MANIFEST_PARSED: string; ERROR: string };
+            ErrorTypes: { MEDIA_ERROR: string; NETWORK_ERROR: string };
             new (config?: Record<string, unknown>): {
               levels: { height?: number; bitrate?: number }[];
               startLevel: number;
               loadSource: (src: string) => void;
               attachMedia: (media: HTMLMediaElement) => void;
-              on: (event: string, handler: () => void) => void;
+              startLoad: () => void;
+              recoverMediaError: () => void;
+              on: (
+                event: string,
+                handler: (
+                  event: string,
+                  data: { fatal?: boolean; type?: string; details?: string },
+                ) => void,
+              ) => void;
             };
           };
         }
       ).Hls;
 
       if (HlsCtor && HlsCtor.isSupported()) {
-        const hls = new HlsCtor({
-          // The hero fills the viewport, so never let hls.js cap the rendition
-          // to the element's CSS box.
-          capLevelToPlayerSize: false,
-          // Default is 500 kbps, which opens the hero on the 240p rendition.
-          // The 1080p rung peaks at ~6.8 Mbps, so the estimate has to clear
-          // that for ABR to pick it on the very first fragment.
-          abrEwmaDefaultEstimate: preferHighQuality ? 8_000_000 : 1_500_000,
-          // Buffer the whole loop where the connection allows, so the second
-          // and later passes play from cache at full quality.
-          maxBufferLength: 45,
-          maxMaxBufferLength: 60,
-        });
+        type HlsInstance = InstanceType<NonNullable<typeof HlsCtor>>;
 
-        // Open on the highest rendition instead of ramping up through the
-        // ladder. ABR still steps down if the connection cannot sustain it.
-        if (preferHighQuality) {
-          hls.on(HlsCtor.Events.MANIFEST_PARSED, () => {
-            const best = hls.levels.reduce(
-              (bestIndex, level, index) => {
-                const current = hls.levels[bestIndex];
+        let hls: HlsInstance | null = null;
+        let playedSincePlayerBuild = true;
+
+        const buildPlayer = () => {
+          const player = new HlsCtor({
+            // The hero fills the viewport, so never let hls.js cap the
+            // rendition to the element's CSS box.
+            capLevelToPlayerSize: false,
+            // Default is 500 kbps, which opens the hero on the 240p rendition.
+            // The 1080p rung peaks at ~6.8 Mbps, so the estimate has to clear
+            // that for ABR to pick it on the very first fragment.
+            abrEwmaDefaultEstimate: preferHighQuality ? 8_000_000 : 1_500_000,
+            // Buffer the whole loop where the connection allows, so the second
+            // and later passes play from cache at full quality.
+            maxBufferLength: 45,
+            maxMaxBufferLength: 60,
+            // Ask to keep what has already played. Chrome evicts it anyway
+            // under memory pressure, which is what rebuildPlayer() cleans up
+            // after, but on the runs where it holds the loop is seamless.
+            backBufferLength: Infinity,
+          });
+
+          // Open on the highest rendition instead of ramping up through the
+          // ladder. ABR still steps down if the connection cannot sustain it.
+          if (preferHighQuality) {
+            player.on(HlsCtor.Events.MANIFEST_PARSED, () => {
+              const best = player.levels.reduce((bestIndex, level, index) => {
+                const current = player.levels[bestIndex];
                 const isBetter =
                   (level.height ?? 0) > (current.height ?? 0) ||
                   ((level.height ?? 0) === (current.height ?? 0) &&
                     (level.bitrate ?? 0) > (current.bitrate ?? 0));
                 return isBetter ? index : bestIndex;
-              },
-              0,
-            );
-            hls.startLevel = best;
-          });
-        }
+              }, 0);
+              player.startLevel = best;
+            });
+          }
 
-        cloudflareVideo.addEventListener("canplay", tryPlay, { once: true });
-        hls.loadSource(hlsSrc);
-        hls.attachMedia(cloudflareVideo);
+          player.on(HlsCtor.Events.ERROR, (_event, data) => {
+            if (!data.fatal) {
+              return;
+            }
+
+            if (data.type === HlsCtor.ErrorTypes.NETWORK_ERROR) {
+              console.warn(
+                "Cloudflare hero video hit a network error, reloading.",
+                data.details,
+              );
+              player.startLoad();
+              return;
+            }
+
+            console.warn(
+              "Cloudflare hero video hit a fatal player error.",
+              data.details,
+            );
+            rebuildPlayer();
+          });
+
+          player.loadSource(hlsSrc);
+          player.attachMedia(cloudflareVideo);
+          hls = player;
+        };
+
+        // Chrome evicts the part of the clip that has already played, so when
+        // the loop seeks back to 0 the player has to re-append the opening
+        // segment into an already-ended MediaSource. Chrome rejects that with
+        // DEMUXER_ERROR_COULD_NOT_PARSE and playback is dead for good, leaving
+        // the hero on its fallback image. hls.js reports nothing in that case,
+        // so watch the media element itself; rebuilding the player is the only
+        // reliable way back into the loop.
+        const rebuildPlayer = () => {
+          if (!playedSincePlayerBuild) {
+            // The last rebuild never reached playback, so stop rather than
+            // hammer the CDN behind a hero nobody can see.
+            console.warn("Cloudflare hero video could not be recovered.");
+            return;
+          }
+
+          playedSincePlayerBuild = false;
+          const previous = hls;
+          hls = null;
+          previous?.destroy();
+          // Tearing the old player down empties the element's src, which fires
+          // one more error; build the replacement once that has settled.
+          window.setTimeout(buildPlayer, 0);
+        };
+
+        cloudflareVideo.addEventListener("playing", () => {
+          playedSincePlayerBuild = true;
+        });
+
+        cloudflareVideo.addEventListener("error", () => {
+          const mediaError = cloudflareVideo.error;
+          // Raised by the teardown in rebuildPlayer(), not by playback.
+          if (!mediaError || /empty src/i.test(mediaError.message)) {
+            return;
+          }
+
+          console.warn(
+            "Cloudflare hero video pipeline failed, rebuilding.",
+            mediaError.message,
+          );
+          rebuildPlayer();
+        });
+
+        // Not { once: true }: a rebuilt player has to be started again.
+        cloudflareVideo.addEventListener("canplay", tryPlay);
+
+        buildPlayer();
         return;
       }
 
-      console.warn("Cloudflare hero video could not initialize HLS playback.");
+      console.warn(
+        "Cloudflare hero video: hls.js is unsupported here, using native playback.",
+      );
     } catch (error) {
-      console.warn("Cloudflare hero video failed to initialize.", error);
+      console.warn("Cloudflare hero video failed to load hls.js.", error);
     }
+
+    playNativeHls();
   };
 
   initHeroVideoReveal();
