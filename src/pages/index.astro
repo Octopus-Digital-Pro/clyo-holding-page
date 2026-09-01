@@ -52,13 +52,11 @@ const submitButtonClasses =
                 loop
                 muted
                 playsinline
-                preload="metadata"
+                preload="auto"
                 poster={heroMedia.imageSrc}
                 crossorigin="anonymous"
                 aria-label={heroMedia.imageAlt}
-              >
-                <source src={cloudflareHlsSrc} type="application/x-mpegURL" />
-              </video>
+              />
             </div>
           ) : heroMedia.videoSrc ? (
             <div class="relative h-full w-full">
@@ -234,6 +232,102 @@ const submitButtonClasses =
   const hlsScriptUrl =
     "https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js";
 
+  const playHeroVideo = (video: HTMLVideoElement) => {
+    const playAttempt = video.play();
+    if (playAttempt instanceof Promise) {
+      playAttempt.catch((error) => {
+        console.warn("Hero video playback was blocked.", error);
+      });
+    }
+  };
+
+  const initHeroVideoLoop = () => {
+    const heroVideo = document.querySelector("[data-hero-video]");
+    if (!(heroVideo instanceof HTMLVideoElement)) {
+      return;
+    }
+
+    heroVideo.loop = true;
+
+    const restartPlayback = () => {
+      if (heroVideo.currentTime > 0) {
+        heroVideo.currentTime = 0;
+      }
+      playHeroVideo(heroVideo);
+    };
+
+    heroVideo.addEventListener("ended", restartPlayback);
+
+    // Streamed playback can stop on the final fragment without firing "ended",
+    // which leaves the native loop with nothing to react to.
+    const restartIfStuckAtEnd = () => {
+      window.setTimeout(() => {
+        const nearEnd =
+          Number.isFinite(heroVideo.duration) &&
+          heroVideo.duration - heroVideo.currentTime < 1;
+        const stuck =
+          heroVideo.paused ||
+          heroVideo.ended ||
+          heroVideo.readyState < HTMLMediaElement.HAVE_FUTURE_DATA;
+        if (nearEnd && stuck) {
+          restartPlayback();
+        }
+      }, 1000);
+    };
+
+    heroVideo.addEventListener("pause", restartIfStuckAtEnd);
+    heroVideo.addEventListener("waiting", restartIfStuckAtEnd);
+    heroVideo.addEventListener("stalled", restartIfStuckAtEnd);
+  };
+
+  // Both playback paths otherwise open the hero on a low rendition and ramp up
+  // over the first several segments, which is most of the time anyone spends
+  // looking at a 40s loop. Only skip the high-quality start when the
+  // connection reports that it cannot sustain ~5 Mbps.
+  const shouldPreferHighQuality = () => {
+    const connection = (
+      navigator as Navigator & {
+        connection?: {
+          effectiveType?: string;
+          downlink?: number;
+          saveData?: boolean;
+        };
+      }
+    ).connection;
+
+    // Safari and Firefox do not expose the Network Information API.
+    if (!connection) {
+      return true;
+    }
+
+    if (connection.saveData) {
+      return false;
+    }
+
+    if (connection.effectiveType && connection.effectiveType !== "4g") {
+      return false;
+    }
+
+    if (typeof connection.downlink === "number" && connection.downlink < 5) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Cloudflare Stream trims the manifest to the single rendition that fits the
+  // hinted downlink. That removes adaptation, so it is only used on the native
+  // HLS path, where the page cannot influence rendition choice any other way.
+  const withBandwidthHint = (src: string, hintMbps: number) => {
+    try {
+      const url = new URL(src, window.location.href);
+      url.searchParams.set("clientBandwidthHint", String(hintMbps));
+      return url.toString();
+    } catch {
+      return src;
+    }
+  };
+
   const initHeroVideoReveal = () => {
     const heroVideo = document.querySelector("[data-hero-video]");
     const heroFallback = document.querySelector("[data-hero-fallback]");
@@ -330,14 +424,9 @@ const submitButtonClasses =
       return;
     }
 
-    const tryPlay = () => {
-      const playAttempt = cloudflareVideo.play();
-      if (playAttempt instanceof Promise) {
-        playAttempt.catch((error) => {
-          console.warn("Cloudflare hero video autoplay was blocked.", error);
-        });
-      }
-    };
+    const preferHighQuality = shouldPreferHighQuality();
+
+    const tryPlay = () => playHeroVideo(cloudflareVideo);
 
     cloudflareVideo.muted = true;
     cloudflareVideo.volume = 1;
@@ -346,7 +435,9 @@ const submitButtonClasses =
       cloudflareVideo.canPlayType("application/vnd.apple.mpegurl") !== "";
 
     if (canPlayNativeHls) {
-      cloudflareVideo.src = hlsSrc;
+      cloudflareVideo.src = preferHighQuality
+        ? withBandwidthHint(hlsSrc, 5)
+        : hlsSrc;
       cloudflareVideo.addEventListener("loadedmetadata", tryPlay, {
         once: true,
       });
@@ -361,16 +452,52 @@ const submitButtonClasses =
         window as Window & {
           Hls?: {
             isSupported: () => boolean;
-            new (): {
+            Events: { MANIFEST_PARSED: string };
+            new (config?: Record<string, unknown>): {
+              levels: { height?: number; bitrate?: number }[];
+              startLevel: number;
               loadSource: (src: string) => void;
               attachMedia: (media: HTMLMediaElement) => void;
+              on: (event: string, handler: () => void) => void;
             };
           };
         }
       ).Hls;
 
       if (HlsCtor && HlsCtor.isSupported()) {
-        const hls = new HlsCtor();
+        const hls = new HlsCtor({
+          // The hero fills the viewport, so never let hls.js cap the rendition
+          // to the element's CSS box.
+          capLevelToPlayerSize: false,
+          // Default is 500 kbps, which opens the hero on the 240p rendition.
+          // The 1080p rung peaks at ~6.8 Mbps, so the estimate has to clear
+          // that for ABR to pick it on the very first fragment.
+          abrEwmaDefaultEstimate: preferHighQuality ? 8_000_000 : 1_500_000,
+          // Buffer the whole loop where the connection allows, so the second
+          // and later passes play from cache at full quality.
+          maxBufferLength: 45,
+          maxMaxBufferLength: 60,
+        });
+
+        // Open on the highest rendition instead of ramping up through the
+        // ladder. ABR still steps down if the connection cannot sustain it.
+        if (preferHighQuality) {
+          hls.on(HlsCtor.Events.MANIFEST_PARSED, () => {
+            const best = hls.levels.reduce(
+              (bestIndex, level, index) => {
+                const current = hls.levels[bestIndex];
+                const isBetter =
+                  (level.height ?? 0) > (current.height ?? 0) ||
+                  ((level.height ?? 0) === (current.height ?? 0) &&
+                    (level.bitrate ?? 0) > (current.bitrate ?? 0));
+                return isBetter ? index : bestIndex;
+              },
+              0,
+            );
+            hls.startLevel = best;
+          });
+        }
+
         cloudflareVideo.addEventListener("canplay", tryPlay, { once: true });
         hls.loadSource(hlsSrc);
         hls.attachMedia(cloudflareVideo);
@@ -384,6 +511,7 @@ const submitButtonClasses =
   };
 
   initHeroVideoReveal();
+  initHeroVideoLoop();
   initHeroVideoAudioControl();
   void initCloudflareHeroVideo();
 
