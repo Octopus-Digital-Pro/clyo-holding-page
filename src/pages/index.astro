@@ -338,19 +338,39 @@ const submitButtonClasses =
       return;
     }
 
+    let revealed = false;
+    let hideFallbackTimeout: number | undefined;
+
     const revealVideo = () => {
+      if (revealed) {
+        return;
+      }
+      revealed = true;
       heroVideo.classList.remove("opacity-0");
-      heroFallback.classList.add("opacity-0");
-      heroFallback.setAttribute("aria-hidden", "true");
+      // Keep the fallback image fully visible until the video has finished
+      // fading in on top of it. Fading both layers at once leaves a moment
+      // where the page background bleeds through, which reads as a flash.
+      hideFallbackTimeout = window.setTimeout(() => {
+        heroFallback.classList.add("opacity-0");
+        heroFallback.setAttribute("aria-hidden", "true");
+      }, 600);
     };
 
-    if (heroVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+    // Reveal only once frames are actually advancing. loadeddata/canplay fire
+    // before autoplay starts, which swapped in a frozen first frame that then
+    // visibly jumped when playback began.
+    if (
+      !heroVideo.paused &&
+      heroVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+    ) {
       revealVideo();
+    } else {
+      heroVideo.addEventListener("playing", revealVideo, { once: true });
     }
 
-    heroVideo.addEventListener("loadeddata", revealVideo, { once: true });
-    heroVideo.addEventListener("canplay", revealVideo, { once: true });
     heroVideo.addEventListener("error", () => {
+      revealed = true;
+      window.clearTimeout(hideFallbackTimeout);
       heroVideo.classList.add("opacity-0");
       heroFallback.classList.remove("opacity-0");
       heroFallback.removeAttribute("aria-hidden");
@@ -441,6 +461,9 @@ const submitButtonClasses =
       cloudflareVideo.addEventListener("loadedmetadata", tryPlay, {
         once: true,
       });
+      // The loadedmetadata attempt can be rejected while the pipeline is still
+      // warming up; retry once the browser reports it can actually play.
+      cloudflareVideo.addEventListener("canplay", tryPlay, { once: true });
       cloudflareVideo.load();
       return;
     }
