@@ -20,7 +20,7 @@ const errorClasses =
 const checkboxRowClasses =
   "flex items-center justify-center gap-[10px] font-[var(--font-serif)] text-[14px] leading-[18px] data-[invalid=true]:text-[var(--destructive)] [&_a]:underline";
 const submitButtonClasses =
-  "inline-flex w-fit items-center justify-center gap-4 rounded-[10px] border border-[var(--color-ivory)] bg-transparent px-5 py-[10px] font-[var(--font-sans)] text-[12px] font-medium uppercase tracking-[1px] leading-[16px] text-[var(--color-night)] transition hover:bg-[rgba(224,208,184,0.25)] xl:px-[32px] xl:text-[14px] xl:leading-[18px] hover:cursor-pointer";
+  "inline-flex w-fit items-center justify-center bg-transparent py-[10px] font-[var(--font-sans)] text-[12px] font-medium uppercase tracking-[1px] leading-[16px] text-[var(--color-night)] transition hover:opacity-70 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-ivory)] xl:text-[14px] xl:leading-[18px] hover:cursor-pointer";
 ---
 
 <BaseLayout
@@ -110,110 +110,107 @@ const submitButtonClasses =
           >
           </div>
 
-          <form
-            class="absolute left-1/2 bottom-8 z-10 grid w-[calc(100%-2rem)] max-w-[348px] -translate-x-1/2 gap-4"
-            id="contact-form"
-            novalidate
+          <div
+            class="absolute left-1/2 bottom-8 z-10 hidden w-[calc(100%-2rem)] max-w-[348px] -translate-x-1/2 opacity-0 transition-opacity duration-500"
+            data-signup-form-wrapper
           >
-            <div class="grid gap-4">
-              <label class="block">
-                <span
+            <form class="grid gap-4" id="contact-form" novalidate>
+              <div class="grid gap-4">
+                <label class="block">
+                  <span
+                    class="absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
+                  >
+                    Email Address
+                  </span>
+                  <input
+                    id="emailAddress"
+                    class={inputClasses}
+                    type="email"
+                    name="emailAddress"
+                    placeholder="Email address*"
+                    required
+                  />
+                  <p
+                    class={errorClasses}
+                    data-error-for="emailAddress"
+                    aria-live="polite"
+                  >
+                  </p>
+                </label>
+              </div>
+
+              <fieldset class="grid gap-[14px] border-0 p-0 m-0">
+                <legend
                   class="absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
                 >
-                  Email Address
-                </span>
-                <input
-                  id="emailAddress"
-                  class={inputClasses}
-                  type="email"
-                  name="emailAddress"
-                  placeholder="Email address*"
-                  required
-                />
+                  Consent
+                </legend>
+                <label
+                  class={checkboxRowClasses}
+                  data-checkbox-row
+                  data-invalid="false"
+                >
+                  <input
+                    id="privacyConsent"
+                    class={checkboxClasses}
+                    data-consent-checkbox
+                    type="checkbox"
+                    name="privacyConsent"
+                    required
+                  />
+                  <span>
+                    I agree to receive emails from CLYO. See
+                    <a
+                      class="underline"
+                      href="/privacy-policy"
+                      rel="noopener noreferrer"
+                    >
+                      Privacy Policy
+                    </a>
+                    .
+                  </span>
+                </label>
                 <p
-                  class={errorClasses}
-                  data-error-for="emailAddress"
+                  class="mt-[-6px] hidden font-(--font-sans) text-[12px] leading-[16px] text-(--destructive) not-empty:block"
+                  data-error-for="privacyConsent"
                   aria-live="polite"
                 >
                 </p>
-              </label>
-            </div>
+              </fieldset>
 
-            <fieldset class="grid gap-[14px] border-0 p-0 m-0">
-              <legend
-                class="absolute -m-px h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
-              >
-                Consent
-              </legend>
-              <label
-                class={checkboxRowClasses}
-                data-checkbox-row
-                data-invalid="false"
-              >
-                <input
-                  id="privacyConsent"
-                  class={checkboxClasses}
-                  data-consent-checkbox
-                  type="checkbox"
-                  name="privacyConsent"
-                  required
-                />
-                <span>
-                  I agree to receive emails from CLYO. See
-                  <a
-                    class="underline"
-                    href="/privacy-policy"
-                    rel="noopener noreferrer"
-                  >
-                    Privacy Policy
-                  </a>
-                  .
-                </span>
-              </label>
+              <div class="flex justify-center">
+                <button class={submitButtonClasses} type="submit">
+                  <span>Stay tuned</span>
+                </button>
+              </div>
               <p
-                class="mt-[-6px] hidden font-(--font-sans) text-[12px] leading-[16px] text-(--destructive) not-empty:block"
-                data-error-for="privacyConsent"
+                class="hidden text-center font-(--font-sans) text-[12px] leading-[16px]"
+                data-submit-status
                 aria-live="polite"
               >
               </p>
-            </fieldset>
+            </form>
+          </div>
 
-            <div class="flex justify-center">
-              <button class={submitButtonClasses} type="submit">
-                <span>Stay tuned</span>
-                <svg
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 12H19"
-                    stroke="currentColor"
-                    stroke-width="1.2"
-                    stroke-linecap="round"></path>
-                  <path
-                    d="M12 5L19 12L12 19"
-                    stroke="currentColor"
-                    stroke-width="1.2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"></path>
-                </svg>
-              </button>
-            </div>
-            <p
-              class="hidden text-center font-(--font-sans) text-[12px] leading-[16px]"
-              data-submit-status
-              aria-live="polite"
+          <div
+            class="absolute left-1/2 bottom-12 z-10 flex w-[calc(100%-2rem)] max-w-[348px] -translate-x-1/2 justify-center"
+            data-signup-trigger-wrapper
+          >
+            <button
+              class={submitButtonClasses}
+              type="button"
+              data-signup-trigger
+              aria-controls="contact-form"
+              aria-expanded="false"
             >
-            </p>
-          </form>
+              <span>Stay tuned</span>
+            </button>
+          </div>
           {
             (heroMedia.cloudflareVideoId || heroMedia.videoSrc) && (
               <button
                 type="button"
-                class="absolute bottom-4 right-4  z-30 hover:cursor-pointer inline-flex h-12 w-12 items-center justify-center"
+                class="absolute bottom-8 right-5  z-30 hover:cursor-pointer inline-flex h-12 w-12 items-center justify-center"
                 data-video-mute-toggle
                 aria-label="Unmute video"
                 aria-pressed="true"
@@ -540,6 +537,7 @@ const submitButtonClasses =
               attachMedia: (media: HTMLMediaElement) => void;
               startLoad: () => void;
               recoverMediaError: () => void;
+              destroy: () => void;
               on: (
                 event: string,
                 handler: (
@@ -678,9 +676,92 @@ const submitButtonClasses =
     playNativeHls();
   };
 
+  // The signup form is held back so the hero video plays uninterrupted. It
+  // arrives either when the video has run once or when the visitor asks for it
+  // by clicking "Stay tuned".
+  const initSignupFormReveal = () => {
+    const wrapper = document.querySelector("[data-signup-form-wrapper]");
+    const triggerWrapper = document.querySelector(
+      "[data-signup-trigger-wrapper]",
+    );
+    const trigger = document.querySelector("[data-signup-trigger]");
+    if (!(wrapper instanceof HTMLElement)) {
+      return;
+    }
+
+    let revealed = false;
+
+    const revealForm = () => {
+      if (revealed) {
+        return;
+      }
+      revealed = true;
+
+      if (triggerWrapper instanceof HTMLElement) {
+        triggerWrapper.classList.add("hidden");
+      }
+      if (trigger instanceof HTMLElement) {
+        trigger.setAttribute("aria-expanded", "true");
+      }
+
+      wrapper.classList.remove("hidden");
+      // Force layout while the form is still transparent, otherwise the
+      // display change and the opacity change land in the same frame and the
+      // fade is skipped.
+      void wrapper.offsetHeight;
+      wrapper.classList.remove("opacity-0");
+    };
+
+    if (trigger instanceof HTMLElement) {
+      trigger.addEventListener("click", revealForm);
+    }
+
+    const heroVideo = document.querySelector("[data-hero-video]");
+    if (!(heroVideo instanceof HTMLVideoElement)) {
+      // No video to wait on, so the form has nothing to be held back for.
+      revealForm();
+      return;
+    }
+
+    // A looping video never fires "ended", so the end of the first playthrough
+    // is read off the clock. Streamed playback can also jump straight from the
+    // last fragment back to 0 without reporting the final tenths, which the
+    // wrap-around check below catches.
+    let passedHalfway = false;
+
+    const checkPlaybackProgress = () => {
+      const { duration, currentTime } = heroVideo;
+      if (!Number.isFinite(duration) || duration <= 0) {
+        return;
+      }
+
+      if (duration - currentTime <= 0.35) {
+        revealForm();
+        return;
+      }
+
+      if (passedHalfway && currentTime < 1) {
+        revealForm();
+        return;
+      }
+
+      if (currentTime > duration / 2) {
+        passedHalfway = true;
+      }
+    };
+
+    heroVideo.addEventListener("timeupdate", checkPlaybackProgress);
+    heroVideo.addEventListener("ended", revealForm);
+
+    // Playback that never starts (blocked autoplay, a failed stream) must not
+    // strand the visitor with no way to sign up beyond the trigger.
+    heroVideo.addEventListener("error", revealForm);
+  };
+
   initHeroVideoReveal();
   initHeroVideoLoop();
   initHeroVideoAudioControl();
+  initSignupFormReveal();
   void initCloudflareHeroVideo();
 
   const RECAPTCHA_SITE_KEY = "6LcviLsrAAAAACjxjvbZp5mhmku9_-DVmPXCDaPd";
